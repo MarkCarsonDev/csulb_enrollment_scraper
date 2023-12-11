@@ -18,18 +18,16 @@ CSULB Enrollment Scraper is a Python-based web scraper and Discord bot. This pro
 3. **Discord Bot Token and User ID**: Create a Discord bot on the Discord Developer Portal to obtain a bot token. Identify the target user ID for notifications.
 4. **Configuration File**: Create a `.env`
 
-
-```DISCORD_TOKEN=<your_discord_bot_token>
-TARGET_USER_ID=<target_discord_user_id>```
+```
+DISCORD_TOKEN=<your_discord_bot_token>
+TARGET_USER_ID=<target_discord_user_id>
+```
 
 5. **Launch the Bot**: Run the script with Python to start the bot.
 
 ## Configuration
 - **Target Course and URL**: Adjust the `url` and `course_title` in the script to target the specific CSULB course page and title.
 - **Monitoring Frequency**: Set the `check_interval` (in seconds) to control how often the bot checks for updates.
-
-## License
-This project is released under the [MIT License](LICENSE), promoting open and reproducible software practices.
 
 ## How to Contribute
 Contributions are highly encouraged and appreciated. To contribute:
