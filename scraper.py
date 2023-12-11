@@ -3,20 +3,30 @@
 import time
 import requests
 from bs4 import BeautifulSoup
-from discord.ext import commands
 import discord
+# .env file for variables
+from dotenv import dotenv_values
+
+config = dotenv_values(".env")
 
 
-bot = commands.Bot(command_prefix='!')
+TOKEN = config["DISCORD_TOKEN"]
 
-user = bot.get_user(381870129706958858)
-
-@bot.command()
-async def DM(ctx, user: discord.User, *, message=None):
-    message = message or "This Message is sent via DM"
-    await user.send(message)
+bot = discord.Client(intents=discord.Intents.default())
 
 bot.run(TOKEN)
+
+TARGET_TOKEN = config["TARGET_TOKEN"]
+
+def send_message(userid: int, message=None):
+    user = bot.get_user(userid)
+    message = message or "This Message is sent via send_message"
+    user.send(message)
+
+@bot.event
+async def on_ready():  # this is when the bot gets started, it will call the "on_ready" function
+    print(f'{bot.user} is now running')  # this tells us that our bot is up and ready
+    
 
 def monitor_course_sections(url, course_title, check_interval=60):
     """
@@ -119,10 +129,10 @@ def fetch_course_sections(url, course_title):
                 if section["Open Seats"] > 0:
                     print("Open seats available!")
                     print_dict(section)
-                    user.send(section)
+                    send_message(TARGET_TOKEN, f'Open seats available!\n{section["Section"]}\n{section["Class Number"]}\n{section["Instructor"]}\n{section["Open Seats"]}')
             if open_seats == 0:
                 print(f'No open seats available on {time.strftime("%H:%M:%S")} at {time.strftime("%d/%m/%Y")}')
-                user.send("No seats available!")
+                send_message(TARGET_TOKEN, f'No open seats available on {time.strftime("%H:%M:%S")} at {time.strftime("%d/%m/%Y")}')
         
                 
         else:
