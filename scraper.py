@@ -13,6 +13,11 @@ config = dotenv_values(".env")
 TOKEN = config["DISCORD_TOKEN"]
 TARGET_USER_ID = int(config["TARGET_USER_ID"])
 
+# URL and course title
+url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Spring_2024/By_Subject/CECS.html"
+course_title = "COMPUTER SCI SENIOR PROJECT I"
+# course_title = "INTRODUCTION TO CECS"
+
 # Initialize Discord bot
 bot = discord.Client(intents=discord.Intents.default())
 
@@ -54,15 +59,12 @@ def get_value_of_key_starting_with(dict_data, start_string):
 def parse_sections_table(table):
     """
     Parses the sections table and returns a list of dictionaries with section details.
-    
-    Args:
-    table (Tag): The BeautifulSoup Tag object of the table to be parsed.
-    
-    Returns:
-    list[dict]: A list of dictionaries, each containing details of a section.
     """
     sections = []
     headers = [th.text.strip() for th in table.find_all('th', scope='col')]
+
+    # Debugging: Print headers to see what they are
+    print("Table Headers:", headers)
 
     for row in table.find_all('tr')[1:]:  # Skipping the header row
         cells = row.find_all(['th', 'td'])
@@ -72,17 +74,26 @@ def parse_sections_table(table):
     formatted = []
 
     for section in sections:
-        open_seats = 0 if get_value_of_key_starting_with(section, "OPEN SEATS") == '' else int(get_value_of_key_starting_with(section, "OPEN SEATS"))
+        # Find the correct index for 'Open Seats' or a similar header
+        open_seats_index = next((i for i, header in enumerate(headers) if "OPEN SEATS" in header.upper()), None)
+        if open_seats_index is not None:
+            open_seats_cell = cells[open_seats_index]
+            dot_element = open_seats_cell.find(class_="dot")
+            open_seats = 1 if dot_element else 0
+        else:
+            open_seats = 0  # Default value if header is not found
+
         formatted_section = {
             "Section": section['SEC.'],
             "Class Number": section['CLASS #'],
             "Instructor": section['INSTRUCTOR'],
-            "Open Seats": open_seats, # Open seats
+            "Open Seats": open_seats,
         }
         formatted.append(formatted_section)
 
-
     return formatted
+
+
 
 def print_dict(dict_data):
     """
@@ -116,15 +127,16 @@ async def fetch_course_sections(url, course_title):
             sections = parse_sections_table(sections_table)
             open_seats = 0
             for section in sections:
+                print(section)
                 open_seats += section["Open Seats"]
                 if section["Open Seats"] > 0:
                     print("Open seats available!")
                     print_dict(section)
-                    await send_message(TARGET_USER_ID, f'Open seats available!\n{section["Section"]}\n{section["Class Number"]}\n{section["Instructor"]}\n{section["Open Seats"]}')
+                    await send_message(TARGET_USER_ID, f'Open seat(s) for {course_title} -- {section["Section"]}\n> Course Number: `{section["Class Number"]}`\n> Instructor: {section["Instructor"]}\n[Schedule of Courses]({url})')
             if open_seats == 0:
                 print(f'No open seats available on {time.strftime("%H:%M:%S")} at {time.strftime("%d/%m/%Y")}')
-                await send_message(TARGET_USER_ID, f'No open seats available on {time.strftime("%H:%M:%S")} at {time.strftime("%d/%m/%Y")}')
-            activity = discord.Activity(type=discord.ActivityType.watching, name=f"{open_seats} seats available (Updated {time.strftime('%H:%M')} on {time.strftime('%A')})")
+                # await send_message(TARGET_USER_ID, f'No open seats available on {time.strftime("%H:%M:%S")} at {time.strftime("%d/%m/%Y")}')
+            activity = discord.Activity(type=discord.ActivityType.watching, name=f"{open_seats} seats available for {course_title} (Updated {time.strftime('%H:%M')} on {time.strftime('%A')})")
             await bot.change_presence(status=discord.Status.idle, activity=activity)
         
                 
@@ -133,10 +145,6 @@ async def fetch_course_sections(url, course_title):
     else:
         print(f"Course with title '{course_title}' not found.")
     return sections
-
-# URL and course title
-url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Spring_2024/By_Subject/CECS.html"
-course_title = "COMPUTER SCI SENIOR PROJECT I"
 
 @bot.event
 async def on_ready():
