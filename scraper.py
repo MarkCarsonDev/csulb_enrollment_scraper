@@ -14,8 +14,8 @@ TARGET_USER_ID = int(config["TARGET_USER_ID"])
 
 # URL and course title for monitoring
 url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Spring_2024/By_Subject/CECS.html"
-# course_title = "COMPUTER SCI SENIOR PROJECT I"
-course_title = "INTRODUCTION TO CECS"
+course_title = "COMPUTER SCI SENIOR PROJECT I"
+# course_title = "INTRODUCTION TO CECS"
 section_count = 0
 
 # Initialize Discord bot with default intents
@@ -33,7 +33,7 @@ async def send_message(user_id: int, message=None):
     message = message or "This was an attempt to send an unspecified message."
     await user.send(message)
 
-async def monitor_course_sections(url, course_title, section_count, check_interval=15):
+async def monitor_course_sections(url, course_title, section_count, check_interval=60):
     """
     Monitors the specified course sections at regular intervals.
 
@@ -137,8 +137,9 @@ async def fetch_course_sections(url, course_title):
                 open_seats += section["Open Seats"]
                 if section["Open Seats"] > 0:
                     await send_message(TARGET_USER_ID, f'Open seat(s) for {course_title} -- {section["Section"]}\n> Course Number: `{section["Class Number"]}`\n> Instructor: {section["Instructor"]}\n[Schedule of Courses]({url})')
-
-            activity = discord.Activity(type=discord.ActivityType.watching, name=f"{open_seats} seats available for {course_title} (Updated {time.strftime('%H:%M')} on {time.strftime('%A')})")
+            if open_seats > 0:
+                await send_message(TARGET_USER_ID, f"**------------^- __Updated {time.strftime('%H:%M:%S')} on {time.strftime('%A, %D')}__ -^------------**")
+            activity = discord.Activity(type=discord.ActivityType.watching, name=f"{open_seats} seats available for {course_title} (Updated {time.strftime('%H:%M')} on {time.strftime('%A, %D')})")
             await client.change_presence(status=discord.Status.online, activity=activity)
         else:
             # Log if no sections table found
