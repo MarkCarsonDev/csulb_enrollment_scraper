@@ -35,8 +35,6 @@ Contributions are highly encouraged and appreciated. To contribute:
 - Create a new branch for your features or fixes.
 - Submit a pull request with a comprehensive description of changes.
 
-For more information, refer to the [contribution guidelines](CONTRIBUTING.md).
-
 ## Acknowledgements
 - The original scraper was created and designed by [uhohspaghettioo](https://github.com/uhohspaghettioo)
 - Improvements and Discord bot functionality were implemented by [Mark Carson](https://github.com/MarkCarsonDev)
